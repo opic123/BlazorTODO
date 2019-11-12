@@ -1,0 +1,180 @@
+﻿@page "/"
+@using BlazorTODO.Services
+
+<div class="card">
+    <div class="card-header">
+        BLAZOR TODO LIST with Syncfusion
+    </div>
+    <div class="card-body">
+
+        <EjsTextBox Placeholder='What needs to be done? Hit enter key 2 times' FloatLabelType='@FloatLabelType.Auto'
+                    @bind-Value="@newTodo" @onkeypress='@(e => KeyPressed(e))'>
+        </EjsTextBox>
+
+        <br /><br />
+     
+        @foreach (var todo in TodosFiltered)
+        {
+            <div class="row mb-4">
+                <div class="col-sm-9">
+                    @if (todo.Editing)
+                    {
+                        <EjsTextBox @bind-Value="@todo.NewTitle" ></EjsTextBox>
+                    }
+                    else
+                    {
+                        <EjsCheckBox Label="@todo.Title" @bind-Checked="@todo.Completed" @onchange="(e => UpdateCompleted(todo))" CssClass='@( todo.Completed  ? "completed" : "" )'></EjsCheckBox>
+
+                    }
+                </div>
+
+                <div class="col-sm-3">
+                    @if (todo.Editing)
+                    {
+                        <EjsButton CssClass="e-round e-small" IconCss="e-icons e-save-icon" @onclick="(e => UpdateTodo(todo))"></EjsButton>
+                        <EjsButton CssClass="e-round e-small" IconCss="e-icons e-clear-icon" @onclick="(e => todo.Editing = false)"></EjsButton>
+                    }
+                    else
+                    {
+                        <EjsButton CssClass="e-round e-small" IconCss="e-icons e-edit-icon" @onclick="(e => todo.Editing = true)"></EjsButton>
+                        <EjsButton CssClass="e-round e-small" IconCss="e-icons e-delete-icon" @onclick="(e => DeleteTodo(todo))"></EjsButton>
+                    }
+                </div>
+        
+            </div>
+
+        }
+
+
+    </div>
+
+    <div class="card-footer">
+        <div class="row mb-4">
+            <div class="col-sm-8">
+                <EjsCheckBox Label="Check All" @bind-Checked="@checkAll" @onchange="CheckAll"></EjsCheckBox>
+            </div>
+            <div class="col-sm-4">
+                <span class="badge badge-success">@RemaingTodos() Items left </span> 
+            </div>
+        </div>
+        <hr />
+        <div class="row mb-4">
+            <div class="col-sm-8">
+                <EjsButton CssClass="e-flat e-small" @onclick='(e => FilterTodo("All"))'>All</EjsButton> &nbsp;&nbsp;
+                <EjsButton CssClass="e-flat e-small" @onclick='(e => FilterTodo("Active"))'>Active</EjsButton> &nbsp;&nbsp;
+                <EjsButton CssClass="e-flat e-small" @onclick='(e => FilterTodo("Completed"))'>Completed</EjsButton>
+            </div>
+
+            @if (RemaingTodos() < Todos.Count)
+            {
+                <div class="col-sm-4">
+                    <EjsButton CssClass="e-flat e-danger e-small" @onclick="ClearCompleted">Clear Completed</EjsButton>
+                </div>
+            }
+
+            
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .completed .e-frame + .e-label {
+        text-decoration: line-through;
+        color: grey;
+    }
+    .e-edit-icon::before {
+        content: '\e7a3';
+    }
+    .e-save-icon::before {
+        content: '\e614';
+    }
+    .e-delete-icon::before {
+        content: '\e706';
+    }
+    .e-clear-icon::before {
+        content: '\e60a';
+    }
+</style>
+
+
+@code
+{
+    private TodoRepo todoRepo;
+
+    private List<Todo> Todos;
+    private List<Todo> TodosFiltered;
+
+    private string newTodo { get; set; }
+    private bool checkAll { get; set; } = false;
+
+    protected override void OnInitialized()
+    {
+        todoRepo = new TodoRepo();
+        Todos = todoRepo.GetTodo().ToList();
+        InitFilterTodos();
+
+    }
+
+    private void InitFilterTodos()
+    {
+        TodosFiltered = todoRepo.GetTodo().ToList();
+    }
+
+
+    private void KeyPressed(KeyboardEventArgs args) {
+        if (args.Key == "Enter" && !string.IsNullOrEmpty(newTodo)) {
+            todoRepo.AddTodo(newTodo);
+            newTodo = "";
+            InitFilterTodos();
+        }
+    }
+
+    private void DeleteTodo(Todo todo)
+    {
+        todoRepo.DeleteTodo(todo);
+        InitFilterTodos();
+    }
+
+    private void UpdateTodo(Todo todo)
+    {
+        if (!string.IsNullOrEmpty(todo.NewTitle)) {
+            todo.Title = todo.NewTitle;
+            todo.Editing = false;
+            todoRepo.UpdateTodo(todo);
+            InitFilterTodos();
+        }
+        
+    }
+
+    private void UpdateCompleted(Todo todo)
+    {
+        todoRepo.UpdateTodo(todo);
+        checkAll = todoRepo.CountRemainingTodos() == 0 ? true : false;
+        InitFilterTodos();
+    }
+
+    private void FilterTodo(string filter)
+    {
+        TodosFiltered = todoRepo.FilterTodo(filter).ToList();
+    }
+
+    private int RemaingTodos()
+    {
+        return todoRepo.CountRemainingTodos();
+    }
+
+    private void CheckAll()
+    {
+        todoRepo.CheckAll(checkAll);
+        InitFilterTodos();
+    }
+
+    private void ClearCompleted()
+    {
+        todoRepo.ClearCompleted();
+        InitFilterTodos();
+    }
+
+
+}
