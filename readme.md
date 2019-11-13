@@ -1,6 +1,7 @@
 # Blazor TODO
+ASP.NET Core / Blazor version of the Laravel VueJS Todo App `https://github.com/opic123/laravuetodo`
 
-New version of the Laravel VueJS Todo App `https://github.com/opic123/laravuetodo` using ASP.NET Core with Blazor
+<img src="https://github.com/opic123/BlazorTODO/blob/master/BlazorTODO/wwwroot/images/Cover.PNG" />
 
 ## Code Coverage
 * Basic C# and blazor setup with ej2.syncfusion integration
