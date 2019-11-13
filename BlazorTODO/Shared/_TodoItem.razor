@@ -1,0 +1,69 @@
+﻿@using BlazorTODO.Services
+
+<div class="row mb-4">
+    <div class="col-sm-9">
+        @if (todo.Editing)
+        {
+            <EjsTextBox @bind-Value="@todo.NewTitle"></EjsTextBox>
+        }
+        else
+        {
+            <EjsCheckBox Label="@todo.Title" @bind-Checked="@todo.Completed" @onchange="@(() => UpdateCompletedHandler.InvokeAsync(todo))" CssClass='@( todo.Completed ? "completed" : "" )'></EjsCheckBox>
+        }
+    </div>
+
+    <div class="col-sm-3">
+        @if (todo.Editing)
+        {
+            <EjsButton CssClass="e-round e-small" IconCss="e-icons e-save-icon" @onclick="@(() => UpdateTodoHandler.InvokeAsync(todo))"></EjsButton>
+            <EjsButton CssClass="e-round e-small" IconCss="e-icons e-clear-icon" @onclick="(() => todo.Editing = false)"></EjsButton>
+        }
+        else
+        {
+            <EjsButton CssClass="e-round e-small" IconCss="e-icons e-edit-icon" @onclick="(() => todo.Editing = true)"></EjsButton>
+            <EjsButton CssClass="e-round e-small" IconCss="e-icons e-delete-icon" @onclick="@(() => DeleteTodoHandler.InvokeAsync(todo))"></EjsButton>
+        }
+    </div>
+
+</div>
+
+
+<style>
+    .completed .e-frame + .e-label {
+        text-decoration: line-through;
+        color: grey;
+    }
+
+    .e-edit-icon::before {
+        content: '\e7a3';
+    }
+
+    .e-save-icon::before {
+        content: '\e614';
+    }
+
+    .e-delete-icon::before {
+        content: '\e706';
+    }
+
+    .e-clear-icon::before {
+        content: '\e60a';
+    }
+</style>
+
+
+@code {
+
+    [Parameter]
+    public Todo todo { get; set; }
+
+    [Parameter]
+    public EventCallback<Todo> UpdateCompletedHandler { get; set; }
+
+    [Parameter]
+    public EventCallback<Todo> UpdateTodoHandler { get; set; }
+
+    [Parameter]
+    public EventCallback<Todo> DeleteTodoHandler { get; set; }
+
+}

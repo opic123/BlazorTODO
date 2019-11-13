@@ -7,44 +7,18 @@
     </div>
     <div class="card-body">
 
-        <EjsTextBox Placeholder='What needs to be done? Hit enter key 2 times' FloatLabelType='@FloatLabelType.Auto'
-                    @bind-Value="@newTodo" @onkeypress='@(e => KeyPressed(e))'>
-        </EjsTextBox>
+        <_AddNewTodo AddTodoHandler="AddTodo"></_AddNewTodo>
 
         <br /><br />
-     
+
         @foreach (var todo in TodosFiltered)
         {
-            <div class="row mb-4">
-                <div class="col-sm-9">
-                    @if (todo.Editing)
-                    {
-                        <EjsTextBox @bind-Value="@todo.NewTitle" ></EjsTextBox>
-                    }
-                    else
-                    {
-                        <EjsCheckBox Label="@todo.Title" @bind-Checked="@todo.Completed" @onchange="(e => UpdateCompleted(todo))" CssClass='@( todo.Completed  ? "completed" : "" )'></EjsCheckBox>
-
-                    }
-                </div>
-
-                <div class="col-sm-3">
-                    @if (todo.Editing)
-                    {
-                        <EjsButton CssClass="e-round e-small" IconCss="e-icons e-save-icon" @onclick="(e => UpdateTodo(todo))"></EjsButton>
-                        <EjsButton CssClass="e-round e-small" IconCss="e-icons e-clear-icon" @onclick="(e => todo.Editing = false)"></EjsButton>
-                    }
-                    else
-                    {
-                        <EjsButton CssClass="e-round e-small" IconCss="e-icons e-edit-icon" @onclick="(e => todo.Editing = true)"></EjsButton>
-                        <EjsButton CssClass="e-round e-small" IconCss="e-icons e-delete-icon" @onclick="(e => DeleteTodo(todo))"></EjsButton>
-                    }
-                </div>
-        
-            </div>
-
+            <_TodoItem todo="todo"
+                       UpdateCompletedHandler="UpdateCompleted"
+                       UpdateTodoHandler="UpdateTodo"
+                       DeleteTodoHandler="DeleteTodo">
+            </_TodoItem>
         }
-
 
     </div>
 
@@ -54,48 +28,26 @@
                 <EjsCheckBox Label="Check All" @bind-Checked="@checkAll" @onchange="CheckAll"></EjsCheckBox>
             </div>
             <div class="col-sm-4">
-                <span class="badge badge-success">@RemaingTodos() Items left </span> 
+                <_RemaingTodosCount RemaingTodos="@RemaingTodos()"></_RemaingTodosCount>
             </div>
         </div>
         <hr />
         <div class="row mb-4">
             <div class="col-sm-8">
-                <EjsButton CssClass="e-flat e-small" @onclick='(e => FilterTodo("All"))'>All</EjsButton> &nbsp;&nbsp;
-                <EjsButton CssClass="e-flat e-small" @onclick='(e => FilterTodo("Active"))'>Active</EjsButton> &nbsp;&nbsp;
-                <EjsButton CssClass="e-flat e-small" @onclick='(e => FilterTodo("Completed"))'>Completed</EjsButton>
+                <_FilterTodo FilterTodoHandler="FilterTodo"></_FilterTodo>
             </div>
 
             @if (RemaingTodos() < Todos.Count)
             {
                 <div class="col-sm-4">
-                    <EjsButton CssClass="e-flat e-danger e-small" @onclick="ClearCompleted">Clear Completed</EjsButton>
+                    <_ClearCompletedTodo ClearCompletedHandler="ClearCompleted"></_ClearCompletedTodo>
                 </div>
             }
 
-            
         </div>
     </div>
 
 </div>
-
-<style>
-    .completed .e-frame + .e-label {
-        text-decoration: line-through;
-        color: grey;
-    }
-    .e-edit-icon::before {
-        content: '\e7a3';
-    }
-    .e-save-icon::before {
-        content: '\e614';
-    }
-    .e-delete-icon::before {
-        content: '\e706';
-    }
-    .e-clear-icon::before {
-        content: '\e60a';
-    }
-</style>
 
 
 @code
@@ -111,21 +63,21 @@
     protected override void OnInitialized()
     {
         todoRepo = new TodoRepo();
-        Todos = todoRepo.GetTodo().ToList();
         InitFilterTodos();
 
     }
 
     private void InitFilterTodos()
     {
-        TodosFiltered = todoRepo.GetTodo().ToList();
+        Todos = todoRepo.GetTodo().ToList();
+        TodosFiltered = Todos;
     }
 
 
-    private void KeyPressed(KeyboardEventArgs args) {
-        if (args.Key == "Enter" && !string.IsNullOrEmpty(newTodo)) {
+    private void AddTodo(string newTodo) {
+        if (!string.IsNullOrEmpty(newTodo))
+        {
             todoRepo.AddTodo(newTodo);
-            newTodo = "";
             InitFilterTodos();
         }
     }
@@ -144,7 +96,7 @@
             todoRepo.UpdateTodo(todo);
             InitFilterTodos();
         }
-        
+
     }
 
     private void UpdateCompleted(Todo todo)

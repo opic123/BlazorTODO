@@ -4,7 +4,8 @@ New version of the Laravel VueJS Todo App `https://github.com/opic123/laravuetod
 
 ## Code Coverage
 * Basic C# and blazor setup with ej2.syncfusion integration
-* Services Dependency Injection `Interface and Repository`
+* Service Dependency Injection `Interface and Repository`
+* Component Communication `parent and child data manipulation`
 
 #### References
 * https://docs.microsoft.com/en-us/aspnet/core/?view=aspnetcore-3.0

@@ -1,0 +1,26 @@
+﻿<EjsButton CssClass="@GetStyle("All")" @onclick='(() => SetFilter("All"))'>All</EjsButton> &nbsp;&nbsp;
+<EjsButton CssClass="@GetStyle("Active")" @onclick='(() => SetFilter("Active"))'>Active</EjsButton> &nbsp;&nbsp;
+<EjsButton CssClass="@GetStyle("Completed")" @onclick='(() => SetFilter("Completed"))'>Completed</EjsButton>
+
+@code {
+    [Parameter]
+    public EventCallback<string> FilterTodoHandler { get; set; }
+
+    private string Filter { get; set; } = "All";
+
+    private string GetStyle(string type)
+    {
+        if (type == Filter)
+        {
+            return "e-success e-small";
+        }
+        return "e-flat e-small";
+        
+    }
+
+    private void SetFilter(string filter)
+    {
+        Filter = filter;
+        FilterTodoHandler.InvokeAsync(Filter);
+    }
+}

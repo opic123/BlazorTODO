@@ -1,0 +1,19 @@
+﻿<EjsTextBox Placeholder='What needs to be done? Please hit the enter key 2 times in order to save the todo' FloatLabelType='@FloatLabelType.Auto'
+            @bind-Value="@newTodo" @onkeypress='@((e) => ValidateTodo(e))'>
+</EjsTextBox>
+
+@code {
+    [Parameter]
+    public EventCallback<string> AddTodoHandler { get; set; }
+
+    private string newTodo { get; set; }
+
+    private void ValidateTodo(KeyboardEventArgs args)
+    {
+         if (args.Key == "Enter" && !string.IsNullOrEmpty(newTodo)) {
+            AddTodoHandler.InvokeAsync(newTodo);
+            newTodo = "";
+         }
+    }
+
+}
