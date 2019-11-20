@@ -4,7 +4,7 @@
 
 @code {
     [Parameter]
-    public EventCallback<string> FilterTodoHandler { get; set; }
+    public EventCallback<int> FilterTodoHandler { get; set; }
 
     private string Filter { get; set; } = "All";
 
@@ -15,12 +15,21 @@
             return "e-success e-small";
         }
         return "e-flat e-small";
-        
+
     }
 
     private void SetFilter(string filter)
     {
         Filter = filter;
-        FilterTodoHandler.InvokeAsync(Filter);
+        var completed = -1;
+        if (filter == "Active")
+        {
+            completed = 1;
+        }
+        else if (filter == "Completed")
+        {
+            completed = 0;
+        }
+        FilterTodoHandler.InvokeAsync(completed);
     }
 }

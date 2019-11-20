@@ -2,42 +2,46 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BlazorTODO.Data;
+using BlazorTODO.ViewModel;
 
 namespace BlazorTODO.Services
 {
-    public class TodoRepo : ITodoRepo
+    public class MockTodoRepo
     {
-        public List<Todo> Todos;
+        public List<TodoViewModel> Todos;
 
         public int CurrentTodoId { get; set; } = 3;
 
-        public TodoRepo()
+        public MockTodoRepo()
         {
-            Todos = new List<Todo>
+            Todos = new List<TodoViewModel>
             {
-                new Todo
+                new TodoViewModel
                 {
                     Id = 1,
                     Title = "Create Blazor Todo App",
+                    Completed = false,
                     NewTitle = "Create Blazor Todo App"
                 },
-                new Todo
+                new TodoViewModel
                 {
                     Id = 2,
                     Title = "Take over the world!",
+                    Completed = false,
                     NewTitle = "Take over the world!"
                 },
             };
         }
 
-        public IEnumerable<Todo> GetTodo()
+        public IEnumerable<TodoViewModel> GetTodo()
         {
             return Todos;
         }
 
         public void AddTodo(string title)
         {
-            var newItem = new Todo
+            var newItem = new TodoViewModel
             {
                 Id = CurrentTodoId++,
                 Title = title,
@@ -51,7 +55,7 @@ namespace BlazorTODO.Services
             var obj = Todos.Find(t => t.Id == todo.Id);
             if (obj != null)
             {
-                obj = todo;
+                // obj = todo;
             }
         }
 
@@ -61,7 +65,7 @@ namespace BlazorTODO.Services
             Todos.RemoveAt(x);
         }
 
-        public IEnumerable<Todo> FilterTodo(string filter)
+        public IEnumerable<TodoViewModel> FilterTodo(string filter)
         {
             if (filter == "Active")
             {

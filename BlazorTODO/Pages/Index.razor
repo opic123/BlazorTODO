@@ -1,5 +1,8 @@
 ﻿@page "/"
+@using BlazorTODO.Data
+@using BlazorTODO.ViewModel
 @using BlazorTODO.Services
+
 
 <div class="card">
     <div class="card-header">
@@ -7,18 +10,27 @@
     </div>
     <div class="card-body">
 
-        <_AddNewTodo AddTodoHandler="AddTodo"></_AddNewTodo>
+        <_AddNewTodo AddTodoHandler="@AddTodo"></_AddNewTodo>
 
         <br /><br />
 
-        @foreach (var todo in TodosFiltered)
+        @if (Todos != null)
         {
-            <_TodoItem todo="todo"
-                       UpdateCompletedHandler="UpdateCompleted"
-                       UpdateTodoHandler="UpdateTodo"
-                       DeleteTodoHandler="DeleteTodo">
-            </_TodoItem>
+            @foreach (var todo in Todos)
+            {
+                <_TodoItem todo="todo"
+                           UpdateCompletedHandler="@UpdateCompleted"
+                           UpdateTodoHandler="@UpdateTodo"
+                           DeleteTodoHandler="@DeleteTodo">
+                </_TodoItem>
+            }
         }
+        else
+        {
+            
+        }
+
+
 
     </div>
 
@@ -34,13 +46,13 @@
         <hr />
         <div class="row mb-4">
             <div class="col-sm-8">
-                <_FilterTodo FilterTodoHandler="FilterTodo"></_FilterTodo>
+                <_FilterTodo FilterTodoHandler="@FilterTodo"></_FilterTodo>
             </div>
 
-            @if (RemaingTodos() < Todos.Count)
+            @if ( Todos != null && RemaingTodos() < Todos.Count)
             {
                 <div class="col-sm-4">
-                    <_ClearCompletedTodo ClearCompletedHandler="ClearCompleted"></_ClearCompletedTodo>
+                    <_ClearCompletedTodo ClearCompletedHandler="@ClearCompleted"></_ClearCompletedTodo>
                 </div>
             }
 
@@ -50,82 +62,97 @@
 </div>
 
 
-@code
-{
-    private TodoRepo todoRepo;
+@code {
+    TodoService todoService;
+    private List<TodoViewModel> Todos;
+    private List<TodoViewModel> TodosFiltered;
 
-    private List<Todo> Todos;
-    private List<Todo> TodosFiltered;
-
-    private string newTodo { get; set; }
     private bool checkAll { get; set; } = false;
 
-    protected override void OnInitialized()
-    {
-        todoRepo = new TodoRepo();
-        InitFilterTodos();
 
-    }
-
-    private void InitFilterTodos()
+    protected override async Task OnInitializedAsync()
     {
-        Todos = todoRepo.GetTodo().ToList();
-        TodosFiltered = Todos;
+        ApiHelper.InitializeClient();
+        todoService = new TodoService();
+        Todos = (await todoService.LoadTodos()).ToList();
+        checkAll = RemaingTodos() == 0 ? true : false;
     }
 
 
-    private void AddTodo(string newTodo) {
-        if (!string.IsNullOrEmpty(newTodo))
+    private async Task AddTodo(string title)
+    {
+        if (!string.IsNullOrEmpty(title))
         {
-            todoRepo.AddTodo(newTodo);
-            InitFilterTodos();
+            Todo newTodo = new Todo
+            {
+                Title = title
+            };
+            Todos.Add(await todoService.AddTodo(newTodo));
         }
     }
 
-    private void DeleteTodo(Todo todo)
+    private async Task DeleteTodo(TodoViewModel todo)
     {
-        todoRepo.DeleteTodo(todo);
-        InitFilterTodos();
+        await todoService.DeleteTodo(todo);
+        Todos.Remove(todo);
     }
 
-    private void UpdateTodo(Todo todo)
+    private async Task UpdateTodo(TodoViewModel todo)
     {
-        if (!string.IsNullOrEmpty(todo.NewTitle)) {
+        if (!string.IsNullOrEmpty(todo.NewTitle))
+        {
             todo.Title = todo.NewTitle;
             todo.Editing = false;
-            todoRepo.UpdateTodo(todo);
-            InitFilterTodos();
+            await todoService.UpdateTodo(todo);
         }
 
     }
 
-    private void UpdateCompleted(Todo todo)
+    private async Task UpdateCompleted(TodoViewModel todo)
     {
-        todoRepo.UpdateTodo(todo);
-        checkAll = todoRepo.CountRemainingTodos() == 0 ? true : false;
-        InitFilterTodos();
+        await todoService.UpdateTodo(todo);
+        checkAll = RemaingTodos() == 0 ? true : false;
     }
 
-    private void FilterTodo(string filter)
+    private async Task FilterTodo(int completed)
     {
-        TodosFiltered = todoRepo.FilterTodo(filter).ToList();
+        if (completed == -1)
+        {
+            Todos = (await todoService.LoadTodos()).ToList();
+        }
+        else
+        {
+            var comp = completed == 1;
+            Todos = (await todoService.FilterTodos(comp)).ToList();
+        }
     }
 
     private int RemaingTodos()
     {
-        return todoRepo.CountRemainingTodos();
+        if (Todos != null)
+        {
+            return Todos.Where(todo => !todo.Completed).ToList().Count();
+        }
+        return 0;
     }
 
-    private void CheckAll()
+    private async Task CheckAll()
     {
-        todoRepo.CheckAll(checkAll);
-        InitFilterTodos();
+        Todos.ForEach(todo =>
+        {
+            todo.Completed = checkAll;
+        });
+        if (Todos.Count() > 0)
+        {
+            await todoService.CheckAll(Todos[0]);
+        }
+
     }
 
-    private void ClearCompleted()
+    private async Task ClearCompleted()
     {
-        todoRepo.ClearCompleted();
-        InitFilterTodos();
+        await todoService.ClearCompleted();
+        Todos = Todos.Where(todo => !todo.Completed).ToList();
     }
 
 

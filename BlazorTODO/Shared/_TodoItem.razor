@@ -1,4 +1,4 @@
-﻿@using BlazorTODO.Services
+﻿@using BlazorTODO.ViewModel
 
 <div class="row mb-4">
     <div class="col-sm-9">
@@ -55,15 +55,15 @@
 @code {
 
     [Parameter]
-    public Todo todo { get; set; }
+    public TodoViewModel todo { get; set; }
 
     [Parameter]
-    public EventCallback<Todo> UpdateCompletedHandler { get; set; }
+    public EventCallback<TodoViewModel> UpdateCompletedHandler { get; set; }
 
     [Parameter]
-    public EventCallback<Todo> UpdateTodoHandler { get; set; }
+    public EventCallback<TodoViewModel> UpdateTodoHandler { get; set; }
 
     [Parameter]
-    public EventCallback<Todo> DeleteTodoHandler { get; set; }
+    public EventCallback<TodoViewModel> DeleteTodoHandler { get; set; }
 
 }
